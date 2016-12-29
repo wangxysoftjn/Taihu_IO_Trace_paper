@@ -1,0 +1,46 @@
+\ifx\allfiles\undefined
+
+\documentclass{article}
+
+\begin{document}
+
+\title{Something in Title}
+
+\author{cohomo@blogbus}
+
+\date{}
+
+\maketitle
+
+\fi
+
+\section{Background}
+
+\label{sec:background}
+
+Taihu-Light is a manycore accelerated 100-petaflop supercomputer, with Turtle as its storage filesystem. The Turtle storage system was deploy from 2015 fall to 2016 spring, along with Taihu-Light. It has a high bandwidth and huge capacity to meet the needs of Taihu-Light.
+Table1 gives key characteristics of the turtle storage system.
+
+Figure 1 shows a conceptual hardware architecture of how Taihu-Ligth connect to Turtle. Taihu-Light connect its computing nodes to Turtle filesystem using an I/O forwarding structure. Every 256 manycore CPUs(4 core SMP) are assigned together as a supernode, which has a full-connect network inside, and connect to I/O forwarding network(a 648-Infiniband switch) with 2 FDR links.
+
+240 server nodes are organized as I/O forwarding structure. They are connect to I/O forwarding network via one link per node and connected to the storage network(another 648 Infiniband switch) with another one. These nodes transfer the I/O requests from Taihu-Light computing nodes to the Turtle filesystem.
+
+At the backend, Turtle use a NetApp type-num? RAID controller as its building block. Each controller has 6 RAID6(8+2) disk enclosure containing a total of 60 1.2TB SAS disk drives. Two OSS hosts are connect to the controller via 2 fiber channel on each host for path redundancy and each OSS has 3 enclosure (and 6 enclosure when the pair node gives up resources and redundancy is activate) to store data. In total, there are 144 building blocks. Together with 4 MDS, they are built into two file system namespaces(online1 and online2) using the storage network . The resulting system has a capacity about 7.6PB(10PB in raw)£¬with 2 file system about 3.8PB each(after enclosure and format).
+
+Figure 2 shows the I/O path and the software architecutre.
+Taihu-Light use Lwfs[reference] as I/O forwarding software to access Turtle. Lwfs is a fuse based, network file system. It uses a C/S structure like nfs. The computing node uses fuse to port I/O request from VFS to a client process, and deliver it to the server side through I/O forwarding network. The server transfer the request to backend file system and send back the reply. And the back end file system is a standard Lustre 2.5.
+
+Each forwarding node has more than 1GB/s read/write bandwidth, so the forwarding system has more than 240GB/s transfer rate. And at the backend each NetAPP controller gives about 1.8GB/s  bandwidth, so the backend file system has about 260GB/s raw bandwidth. As a whole, Turtle is tested to deliver an aggregate 240GB/s for reads and 220GB/s for writes which translates into 200+GB/s aggregate read and write performance at the file system level.
+
+As well as Taihu-Light supercomputer, Turtle servers some other analysis and visualization platforms. Various applications are run on Turtle, so there is a challenge to understand the application's I/O behavior as well as Turtle storage system itself.
+
+Through the deployments of Turtle, we have developed a comprehensive monitoring tools. Through it, we 
+
+The 
+
+
+\ifx\allfiles\undefined
+
+\end{document}
+
+\fi
