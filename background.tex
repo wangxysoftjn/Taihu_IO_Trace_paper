@@ -21,7 +21,7 @@
 Taihu-Light is a manycore accelerated 100-petaflop supercomputer, with Turtle as its storage filesystem. The Turtle storage system was deploy from 2015 fall to 2016 spring, along with Taihu-Light. It has a high bandwidth and huge capacity to meet the needs of Taihu-Light.
 Table1 gives key characteristics of the turtle storage system.
 
-Figure 1 shows a conceptual hardware architecture of how Taihu-Ligth connect to Turtle. Taihu-Light connect its computing nodes to Turtle filesystem using an I/O forwarding structure. Every 256 manycore CPUs(4 core SMP) are assigned together as a supernode, which has a full-connect network inside, and connect to I/O forwarding network(a 648-Infiniband switch) with 2 FDR links.
+Figure 1 shows a conceptual hardware architecture of how Taihu-Ligth connect to Turtle. Taihu-Light connect its computing nodes to Turtle filesystem using an I/O forwarding network. Every 256 manycore CPUs(4 core SMP) are assigned together as a supernode, which has a full-connect network inside, and connect to I/O forwarding network(a 648-Infiniband switch) with 2 FDR links.
 
 240 server nodes are organized as I/O forwarding structure. They are connect to I/O forwarding network via one link per node and connected to the storage network(another 648 Infiniband switch) with another one. These nodes transfer the I/O requests from Taihu-Light computing nodes to the Turtle filesystem.
 
