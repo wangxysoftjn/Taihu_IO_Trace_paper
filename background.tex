@@ -48,11 +48,16 @@ By considering the design of the Taihu-Light and Turtle storage system, we ident
 
 1) I/O operations are always raised by the applications, So the syscall traces are collected on the computing nodes to show the characteristics and patterns of the applications.  
 
-2) On the I/O forwarding node, aggregated Lustre client's RPCs are recorded to show the network flow.
+2) On the I/O forwarding node, aggregated Lustre client's RPCs are recorded to show the network flow. Requests from the computing nodes will be aggregated  
 
-3) On the I/O server, aggregated Lustre OSTs operations are recorded to show the disk access. 
+3) On the I/O server, aggregated Lustre OSTs operations are recorded to show the disk access. Requests from the 
 
-Other 
+
+
+It is not necessary to record the detailed trace on I/O forwarding node and I/O server. Requests submitted from the computing nodes will be aggregated by the Lustre client on the I/O forwarding node, and the aggregated requests will be remapped and submitted to   
+
+These points contain the main statstics through the I/O path and give an overview of the I/O process on the system level. 
+ 
 
 \ifx\allfiles\undefined
 
