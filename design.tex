@@ -39,10 +39,12 @@ Detailed design of collect part 2)
 Requests transferred to I/O forwarding node will be issued as syscalls to Lustre client. Defaultly there is no optimization, so the syscall is exactly the same as 
 what is record on the compute node.
 
-And the syscall will be transformed to RPC by Lustre Client. RPC（remote process call） is a request from Lustre client to server which could be normalized to a read or write operation with specific size. The process from syscall to RPC is traditionally treated as a black box, which is not going to be talked in this paper. But Lustre client gives proc entries to see RPC snapshots to all servers. These snapshots will be recorded into database also in second granularity. And the flow in time series shows the communication between Lustre client and server.
+And the syscall will be matched in cache or transformed to RPC by Lustre Client. RPC（remote process call） is a request from Lustre client to server which could be normalized to a read or write operation with specific size. The process from syscall to RPC is traditionally treated as a black box, which is not going to be talked in this paper. But Lustre client gives proc entries to see RPC snapshots to all servers. These snapshots will be recorded into database also in second granularity. And the flow in time series shows the communication between Lustre client and server.
 
 Detailed design of part 3)
+RPCs sent to Lustre server will be matched in cache or  transformed to requests to diskarray. According to paper[professor ma's], diskarray on Titan can record access history into MYSQL database, while Turtle's cann't. But Lustre server gives proc entries to see snapshot of obdfilter's requests instead. These proc entries are recorded into database as the RPC proc entries and used to reveal diskarray access.
 
+Track from different point of the system gives a runtime panorama of the I/O system, and gives people a window to research and optimize. 
 
 [yangbin: Amount of all logs]
 
