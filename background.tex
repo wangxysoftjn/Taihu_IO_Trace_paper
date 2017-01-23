@@ -29,11 +29,14 @@ At the backend, Turtle use a NetApp type-num? RAID controller as its building bl
 
 Figure 2 shows the I/O path and the software architecutre.
 Taihu-Light use Lwfs[reference] as I/O forwarding software to access Turtle. Lwfs is a fuse based, network file system. It uses a C/S structure something like nfs. The computing node uses fuse to port I/O request from VFS to a forwarding client, and deliver it to the server side through network. The forwarding server receive the request and transfer it to a client of Lustre, which served as the backend file system. 
+
+In practice, every 512 compute nodes share a forwarding node. So 42 rack(each with 1024 compute node) uses 84 forwarding nodes. The share rate can be adjust to 256 or fewer when there is enough forwarding node left.
+
 Lustre handled the I/O request and return reply to the forwarding server. The forwarding server give the reply back to the client, and client wake up the application who is sleeping on fuse, so as to finish the whole I/O process.
 
 Each forwarding node has a bandwidth more than 1GB/s read/write, so the forwarding system has more than 240GB/s transfer rate. And at the backend each NetAPP controller gives about 1.8GB/s(theoritically 2.0GB/s) bandwidth, which means the backend file system has about 260GB/s raw bandwidth. As a whole, Turtle is tested to deliver an aggregate 240GB/s for reads and 220GB/s for writes which translates into 200+GB/s aggregate read and write performance at the file system level.
 
-As well as Taihu-Light supercomputer, Turtle servers some other analysis and visualization platforms. Various applications are run on Turtle, so there is a challenge to understand the application's I/O behavior as well as Turtle storage system itself.
+As well as Taihu-Light supercomputer, Turtle serves some other analysis and visualization platforms. Various applications are run on Turtle, so there is a challenge to understand the application's I/O behavior as well as Turtle storage system itself.
 
 Through the deployments of Turtle, we have developed a comprehensive monitoring tools. Through it, we are able to get the I/O trace at different level of the I/O system. Using the trace, we find a lot of interesting details of the system as well as some of the applications. 
 

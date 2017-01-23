@@ -27,25 +27,29 @@ Taihu-light's computing node is a 4 core SMP and is monopolized by one specific 
 
 Darshan[] and some other tools choose to collect traces in user level which represents application's behavior more precisely. But this based on the user's cooperation to recompile the source code using instrumented I/O library. While some users don't want to do so, these traces collected by these tools are created by a part of the jobs and will not cover the whole system. Taihu-light collect the log in lwfs which is a system level software, therefore to avoid the complex instrumentation and recompile problem. And thus, it's able to get information of the whole system.
 
-Traces are collected on the compute nodes as logs. Taihu-light's compute nodes are diskless and use a part of RAM as a tmp filesystem to store runtime data. The lwfs record I/O operation log into this tmpfs. According to HPC china's paper[], with normal I/O payload, these logs only cost about less than one percent overhead.
+Traces are collected on the compute nodes as logs. Taihu-light's compute nodes are diskless and use a part of RAM as a tmp filesystem to store runtime data. The lwfs record I/O operation log into this tmpfs. According to HPC china's paper[], with normal I/O payload, these logs only cost about less than one percent overhead. The log entries are collected in second granularity because more detailed trace are meaningless in a large parallel scale.
 
 The log shouldn be moved out of tmp filesystem quickly because the tmp filesystem doesn't have much capacity. So every ten minutes the log file will be moved to an exchange file, which will be deleted after another ten minutes. Though observation, the log file's size is controlled under 10MB.
 
-The log file will be transferred to the collect node through a tcp channel by ethernet used for monitoring and management. The log entries will be compressed before transfer, so the log data transferred on the ethernet will be decreased remarkably.
+The log file will be transferred to the collect node through a tcp channel on ethernet used for monitoring and management.  Before transfer it will be compressed, so the data on the ethernet will be decreased remarkably.  [yangbin: experiment result]
 
 As well as the forwarding structure, every 512 compute nodes are connect to a collect node, where logstash runs to collect all the output log entries. And logstash will transfer the log into elasticsearch through a redis . Thus logs of all compute nodes will be stored in elasticsearch for later analysis.
 
 Detailed design of collect part 2)
-syscall is  to the compute node, so don't collect.
-on the contrary, the RPC are collected.
-The process from syscall to RPC is inside Lustre client, which traditionally treated as a black box.
-but 
+Requests transferred to I/O forwarding node will be issued as syscalls to Lustre client. Defaultly there is no optimization, so the syscall is exactly the same as 
+what is record on the compute node.
+
+And the syscall will be transformed to RPC by Lustre Client. RPC（remote process call） is a request from Lustre client to server which could be normalized to a read or write operation with specific size. The process from syscall to RPC is traditionally treated as a black box, which is not going to be talked in this paper. But Lustre client gives proc entries to see RPC snapshots to all servers. These snapshots will be recorded into database also in second granularity. And the flow in time series shows the communication between Lustre client and server.
 
 Detailed design of part 3)
 
-analysis
 
-feedback
+[yangbin: Amount of all logs]
+
+[yangbin: analysis]
+how to get job information
+how to get correspond compute nodes' I/O behavior
+how to plot figure
 
 \ifx\allfiles\undefined
 
