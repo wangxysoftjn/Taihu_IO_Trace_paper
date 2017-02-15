@@ -18,40 +18,47 @@
 
 \label{sec:design}
 
-trace system
+collect system
 
 Detailed design of collect part 1)
 base on HPC china's paper[].
 
-Taihu-light's computing node is a 4 core SMP and is monopolized by one specific job. Trace collected from one computing node is always created by this job, and traces from all nodes of the job can give a overall perspective of its I/O.
+Taihu-light's computing node is a 4 core SMP and is monopolized by one specific job. Trace collected from one computing node is always created by this job, and traces from all nodes of the job can give a overall perspective.
 
-Darshan[] and some other tools choose to collect traces in user level which represents application's behavior more precisely. But this based on the user's cooperation to recompile the source code using instrumented I/O library. While some users don't want to do so, these traces collected by these tools are created by a part of the jobs and will not cover the whole system. Taihu-light collect the log in lwfs which is a system level software, therefore to avoid the complex instrumentation and recompile problem. And thus, it's able to get information of the whole system.
+Taihu-light's compute node is diskless and uses a part of RAM as a tmpfs where information is recorded as log files. Log files will then be transferred to the collect node through a tcp channel on ethernet for later analysis. This approach uses log files as a interchange which decouples the collect system and the instrumented system. Developper don't have to instrument system using specific interfaces, instead they can simply write the interested information into a log file. This approach is more convenient than the traditional instrumentation method.
 
-Traces are collected on the compute nodes as logs. Taihu-light's compute nodes are diskless and use a part of RAM as a tmp filesystem to store runtime data. The lwfs record I/O operation log into this tmpfs. According to HPC china's paper[], with normal I/O payload, these logs only cost about less than one percent overhead. The log entries are collected in second granularity because more detailed trace are meaningless in a large parallel scale.
+Darshan[] and some other tools choose to collect traces in user level which represents application's behavior more precisely. But this based on the user's cooperation to recompile the source code using instrumented I/O library. While some users don't want to do so, traces collected by these tools are created by a part of the jobs and will not cover the whole system. So on Taihu-light's compute node, we implement the log in lwfs's client side, which is a I/O system level software, therefore avoid the complex recompile problem. And thus, it's able to get information from the whole system which means the coverage is 100 percent. 
 
-The log shouldn be moved out of tmp filesystem quickly because the tmp filesystem doesn't have much capacity. So every ten minutes the log file will be moved to an exchange file, which will be deleted after another ten minutes. Though observation, the log file's size is controlled under 10MB.
+Taihu-light's compute node doesn't have much memory(about 300MB) reserved for system, so the tmp filesystem doesn't have much capacity. Some technique like logrotate must be used to get the logfile out of tmp filesystem quickly. Now there is a daemon run in background to move the content of the log file to an temporary file, which will be deleted after another ten minutes. Through observation, the log file's size is controlled under 10MB.
 
-The log file will be transferred to the collect node through a tcp channel on ethernet used for monitoring and management.  Before transfer it will be compressed, so the data on the ethernet will be decreased remarkably.  [yangbin: experiment result]
+There is no time warp system[] in Taihu-light, and NTP is used to maintain the compute node's time. So there is no possibility to replay the event in a precise order. So we decided to analysis the event in statistic level. Therefore the log can be compressed in second granularity before transfer. Besides the compress decreases the log remarkably which makes transfer on the ethernet possible.[yangbin: expand talk. evaluation. ]
 
-As well as the forwarding structure, every 512 compute nodes are connect to a collect node, where logstash runs to collect all the output log entries. And logstash will transfer the log into elasticsearch through a redis . Thus logs of all compute nodes will be stored in elasticsearch for later analysis.
+When deployed on Taihu-light, every 512 compute nodes are connectted to a collect node where logstash runs to collect all the output log entries. And logstash will transfer the log into elasticsearch through a redis . Thus logs of all compute nodes will be stored in elasticsearch for later analysis.
 
 Detailed design of collect part 2)
 Requests transferred to I/O forwarding node will be issued as syscalls to Lustre client. Defaultly there is no optimization, so the syscall is exactly the same as 
 what is record on the compute node.
 
-And the syscall will be matched in cache or transformed to RPC by Lustre Client. RPC（remote process call） is a request from Lustre client to server which could be normalized to a read or write operation with specific size. The process from syscall to RPC is traditionally treated as a black box, which is not going to be talked in this paper. But Lustre client gives proc entries to see RPC snapshots to all servers. These snapshots will be recorded into database also in second granularity. And the flow in time series shows the communication between Lustre client and server.
+And syscall will be matched in cache or transformed into RPCs by Lustre Client. RPC（remote process call）is a request from Lustre client to server which could be normalized to a read or write operation with specific size. The process from syscall to RPCs is traditionally treated as a black box, which is not going to be talked in this paper. But Lustre client gives proc entries to see RPCs snapshot. Also, this snapshot will be recorded into database every one second. And the flow in time series shows the communication between Lustre clients and servers.
+
+All 240 forwarding nodes are connected one collect node.
 
 Detailed design of part 3)
 RPCs sent to Lustre server will be matched in cache or  transformed to requests to diskarray. According to paper[professor ma's], diskarray on Titan can record access history into MYSQL database, while Turtle's cann't. But Lustre server gives proc entries to see snapshot of obdfilter's requests instead. These proc entries are recorded into database as the RPC proc entries and used to reveal diskarray access.
 
+As well as the I/O forwarding nodes, all 288 I/O servers are connected to one collect node.
+
 Track from different point of the system gives a runtime panorama of the I/O system, and gives people a window to research and optimize. 
 
-[yangbin: Amount of all logs]
+[yangbin: Amount of all logs]                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
 
 [yangbin: analysis]
 how to get job information
 how to get correspond compute nodes' I/O behavior
 how to plot figure
+
+
+
 
 \ifx\allfiles\undefined
 

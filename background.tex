@@ -38,14 +38,7 @@ Each forwarding node has a bandwidth more than 1GB/s read/write, so the forwardi
 
 As well as Taihu-Light supercomputer, Turtle serves some other analysis and visualization platforms. Various applications are run on Turtle, so there is a challenge to understand the application's I/O behavior as well as Turtle storage system itself.
 
-Through the deployments of Turtle, we have developed a comprehensive monitoring tools. Through it, we are able to get the I/O trace at different level of the I/O system. Using the trace, we find a lot of interesting details of the system as well as some of the applications. 
-
-......
-
-......
-
-lalal
-
+Through the deployments of Turtle, we have developed a comprehensive monitoring tools. Through it, we are able to get the I/O information at different level of the I/O system. Using the information, we find a lot of interesting details of the system as well as some of the applications. 
 
 By considering the design of the Taihu-Light and Turtle storage system, we identified three major points to collect the trace, illustrated in Figure 1
 
@@ -55,11 +48,9 @@ By considering the design of the Taihu-Light and Turtle storage system, we ident
 
 3) On the I/O server, aggregated Lustre OSTs operation stats are recorded to show the disk access. Requests from the 
 
-
-
-It is not necessary to record the detailed trace on I/O forwarding node and I/O server. Requests submitted from the computing nodes will be aggregated by the Lustre client on the I/O forwarding node, and the aggregated requests will be remapped and submitted to I/O servers.  
-
 These points contain the main statstics through the I/O path and give an overview of the I/O process on the system level. 
+
+We don't collect detailed traces on I/O forwarding nodes and servers. Although Lustre provides these information through lctl utility, it is not necessary to be collected because these information.Also, requests submitted from the computing nodes will be aggregated by the Lustre client on the I/O forwarding node, and the aggregated requests will be remapped and submitted to I/O servers. 
  
 
 \ifx\allfiles\undefined
